@@ -8,11 +8,7 @@ Summary:        Standalone, statically linked clang-format from LLVM 21
 
 License:        Apache-2.0 WITH LLVM-exception
 URL:            https://github.com/llvm/llvm-project
-Source0:        %{url}/releases/download/llvmorg-%{version}/llvm-%{version}.src.tar.xz
-Source1:        %{url}/releases/download/llvmorg-%{version}/clang-%{version}.src.tar.xz
-# Since LLVM 15 the per-project tarballs no longer bundle the shared CMake
-# modules; llvm/clang reference them at ../cmake, so this must be unpacked too.
-Source2:        %{url}/releases/download/llvmorg-%{version}/cmake-%{version}.src.tar.xz
+Source0:        %{url}/releases/download/llvmorg-%{version}/llvm-project-%{version}.src.tar.xz
 
 # A fully static binary carries no shared-library symbols, so there is no
 # debuginfo to extract and no .so to ldconfig.
@@ -36,20 +32,16 @@ clang-format tool from LLVM/Clang %{version}, built as a self-contained
 statically linked executable named clang-format-21.
 
 %prep
-rm -rf llvm clang cmake build
+rm -rf llvm-project build
 tar -xf %{SOURCE0}
-tar -xf %{SOURCE1}
-tar -xf %{SOURCE2}
-mv llvm-%{version}.src  llvm
-mv clang-%{version}.src clang
-# llvm/clang expect the shared CMake modules as a sibling directory named cmake
-mv cmake-%{version}.src cmake
+mv llvm-project-%{version}.src llvm-project
 
 %build
-cmake -G Ninja -S llvm -B build \
+cmake -G Ninja -S llvm-project/llvm -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_PROJECTS=clang \
     -DLLVM_TARGETS_TO_BUILD=X86 \
+    -DLLVM_APPEND_VC_REV=OFF \
     -DBUILD_SHARED_LIBS=OFF \
     -DLLVM_BUILD_LLVM_DYLIB=OFF \
     -DLLVM_LINK_LLVM_DYLIB=OFF \
@@ -78,7 +70,7 @@ file %{buildroot}%{_bindir}/clang-format-21
 %{buildroot}%{_bindir}/clang-format-21 --version
 
 %files
-%license llvm/LICENSE.TXT
+%license llvm-project/llvm/LICENSE.TXT
 %{_bindir}/clang-format-21
 
 %changelog
